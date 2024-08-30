@@ -22,15 +22,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.metalpizzacat.knucklebones.ui.theme.KnuckleBonesTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
@@ -100,14 +103,16 @@ fun DieIcon(die: DieState, onClick: () -> Unit) {
 @Composable
 fun DieGrid(board: BoardState, onClick: (column: Int) -> Unit) {
     Column {
-        Text(board.getTotalPointCount().toString(), modifier = Modifier.fillMaxWidth())
+        Text(board.totalPointCount.toString(), modifier = Modifier.fillMaxWidth())
         Row {
             for (j in 0..<3) {
                 Column {
                     for (i in 0..<3) {
                         DieIcon(die = board[j, i]) {
                             Log.d("hi", "Clicked $j x $i")
-                            onClick(j)
+                            if (board.canPlaceInColumn(j)) {
+                                onClick(j)
+                            }
                         }
                     }
                 }
@@ -121,10 +126,11 @@ fun Playfield(
     modifier: Modifier = Modifier,
     viewModel: GameViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    var currentAnimationCycleCount by remember { mutableIntStateOf(9) }
+    val currentAnimationCycleCount by remember { mutableIntStateOf(9) }
     var isRolling by remember { mutableStateOf(true) }
     val playerBoardState by viewModel.playerState.collectAsState()
-    val computerBoardState by viewModel.playerState.collectAsState()
+    val computerBoardState by viewModel.computerState.collectAsState()
+    val scope = rememberCoroutineScope()
 
     Column(modifier) {
         Text("Expected value: ${viewModel.expectedRoll.value}")
@@ -134,24 +140,28 @@ fun Playfield(
             Text(text = "Wait for your turn")
         }
         DieGrid(board = computerBoardState) { }
-
-        AnimatedDie(
-            viewModel.expectedRoll,
-            cycleCount = currentAnimationCycleCount,
-            isActive = isRolling,
-            delayBetweenSwitches = 100
-        ) {
-            isRolling = false
+        if (!viewModel.gameFinished) {
+            AnimatedDie(
+                viewModel.expectedRoll,
+                cycleCount = currentAnimationCycleCount,
+                isActive = isRolling,
+                delayBetweenSwitches = 100
+            ) {
+                isRolling = false
+                if (!viewModel.isPlayerTurn) {
+                    scope.launch {
+                        delay(1000)
+                        viewModel.doComputerTurn()
+                        viewModel.doNextRoll()
+                        isRolling = true
+                    }
+                }
+            }
+        } else {
+            Button(onClick = { viewModel.resetGame() }) {
+                Text(text = stringResource(R.string.start_over))
+            }
         }
-//        if (!isRolling) {
-//            Button(onClick = {
-//                isRolling = true
-//                viewModel.doNextRoll()
-//                currentAnimationCycleCount = Random.nextInt(4, 12)
-//            }) {
-//                Text("Roll again")
-//            }
-//        }
         DieGrid(board = playerBoardState) { y ->
             if (!isRolling && viewModel.isPlayerTurn) {
                 viewModel.placeDieOnPlayerBoard(y, viewModel.expectedRoll)

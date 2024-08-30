@@ -20,6 +20,21 @@ data class BoardState(private val board: Array<DieState> = Array(9) { DieState.N
         board[row + column * 3] = die
     }
 
+    val boardFull: Boolean
+        get() = board.all { it != DieState.NONE }
+
+    val totalPointCount: Int
+        get() {
+            var total: Int = 0
+
+            for (column in board.toList().chunked(3)) {
+                for (i in 0..<3) {
+                    total += column[i].value * column.count { it == column[i] }
+                }
+            }
+            return total
+        }
+
     /**
      * Create a new copy of the board state with new die added at the specified column
      * @param column which to append to
@@ -36,8 +51,26 @@ data class BoardState(private val board: Array<DieState> = Array(9) { DieState.N
         return copy(board = copyArray)
     }
 
+    fun add(column: Int, die: DieState) {
+        for (i in 0..<3) {
+            if (this[column, i] == DieState.NONE) {
+                this[column, i] = die
+                return
+            }
+        }
+    }
+
+    fun remove(column: Int, die: DieState) {
+        for (i in 0..<3) {
+            if (this[column, i] == die) {
+                this[column, i] = DieState.NONE
+            }
+        }
+    }
+
     /**
-     * Create a new copy of the board state with all die matching the given die removed
+     * Create a new copy of the board state with all die matching the given die removed.
+     * If there is nothing to remove this will be equivalent to calling `deepCopy`
      */
     fun removeAndCopy(column: Int, die: DieState): BoardState {
         val copyArray = board.clone()
@@ -53,23 +86,8 @@ data class BoardState(private val board: Array<DieState> = Array(9) { DieState.N
      * Check if a new die can be added to a column
      * @param column Column to check
      */
-    fun canPlaceInColumn(column: Int): Boolean {
-        for (i in 0..<3) {
-            if (this[column, i] != DieState.NONE) {
-                return false
-            }
-        }
-        return true
-    }
+    fun canPlaceInColumn(column: Int): Boolean = (0..<3).any { this[column, it] == DieState.NONE }
 
-    fun getTotalPointCount(): Int {
-        var total: Int = 0
 
-        for (column in board.toList().chunked(3)) {
-            for (i in 0..<3) {
-                total += column[i].value * column.count { it == column[i] }
-            }
-        }
-        return total
-    }
+    fun deepCopy(): BoardState = copy(board = board.clone())
 }
