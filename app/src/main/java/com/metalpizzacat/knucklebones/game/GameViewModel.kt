@@ -1,6 +1,5 @@
-package com.metalpizzacat.knucklebones
+package com.metalpizzacat.knucklebones.game
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -21,24 +20,54 @@ class GameViewModel : ViewModel() {
     var isPlayerTurn by mutableStateOf(true)
         private set
 
+    var currentGameState by mutableStateOf(GameState.MENU)
+
     var expectedRoll by mutableStateOf(DieState.NONE)
         private set
 
     var gameFinished by mutableStateOf(false)
         private set
 
+    var isPlayingAgainstPlayer by mutableStateOf(false)
+        private set
+
+    val playerWon: Boolean
+        get() = _playerState.value.totalPointCount > _computerState.value.totalPointCount
+
     init {
         resetGame()
+    }
+
+    fun startGameAgainstPlayer() {
+        resetGame()
+        isPlayingAgainstPlayer = true
+    }
+
+    fun startGameAgainstBot() {
+        resetGame()
+        isPlayingAgainstPlayer = false
     }
 
     fun resetGame() {
         isPlayerTurn = true//Random.nextBoolean()
         expectedRoll = DieState.nextRandomDie()
         gameFinished = false
+        _playerState.update {
+            BoardState()
+        }
+        _computerState.update {
+            BoardState()
+        }
     }
 
     private fun finishGame() {
         gameFinished = true
+    }
+
+    private fun verifyGameState() {
+        if (_playerState.value.boardFull || _computerState.value.boardFull) {
+            finishGame()
+        }
     }
 
     fun doNextRoll() {
@@ -51,15 +80,32 @@ class GameViewModel : ViewModel() {
      * Place a given die to the specified column
      */
     fun placeDieOnPlayerBoard(columnId: Int, die: DieState) {
+        if (_playerState.value.boardFull) {
+            return
+        }
         _playerState.update {
             it.addAndCopy(columnId, die)
         }
         _computerState.update {
             it.removeAndCopy(columnId, die)
         }
-        if (_playerState.value.boardFull) {
-            finishGame()
+        verifyGameState()
+    }
+
+    /**
+     * Place a die on the computer board the same way it can be placed on the player bird
+     */
+    fun placeDieOnComputerBoard(columnId: Int, die: DieState) {
+        if (_computerState.value.boardFull) {
+            return
         }
+        _computerState.update {
+            it.addAndCopy(columnId, die)
+        }
+        _playerState.update {
+            it.removeAndCopy(columnId, die)
+        }
+        verifyGameState()
     }
 
     /**
@@ -83,9 +129,7 @@ class GameViewModel : ViewModel() {
 
             benefitPoints[i] =
                 (copyBoard.totalPointCount - enemyCopyBoard.totalPointCount)
-            Log.d("CAC_STEP", "Column: $i predicted: ${benefitPoints[i]}")
         }
-        Log.d("COMPUTER_AI_CALC", benefitPoints.joinToString(","))
         val resultColumn =
             benefitPoints.indices.filter { benefitPoints[it] != 0 }.maxBy { benefitPoints[it] }
         _computerState.update {

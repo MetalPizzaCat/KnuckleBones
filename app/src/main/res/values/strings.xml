@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">KnuckleBones</string>
     <string name="start_over">Start over</string>
+    <string name="play_against_bot">Play against bot</string>
+    <string name="play_against_player">Play against player</string>
+    <string name="player_1_won">Player 1 Won!</string>
+    <string name="player_2_won">Player 2 Won!</string>
+    <string name="to_the_menu">To the menu</string>
+    <string name="image_of_a_die_with_6_dots">Image of a die with 6 dots</string>
 </resources>

@@ -1,5 +1,6 @@
-package com.metalpizzacat.knucklebones
+package com.metalpizzacat.knucklebones.game
 
+import com.metalpizzacat.knucklebones.R
 import kotlin.random.Random
 
 enum class DieState(val value: Int, val res: Int) {

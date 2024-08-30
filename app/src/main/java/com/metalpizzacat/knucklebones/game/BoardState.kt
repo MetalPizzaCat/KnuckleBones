@@ -1,4 +1,4 @@
-package com.metalpizzacat.knucklebones
+package com.metalpizzacat.knucklebones.game
 
 data class BoardState(private val board: Array<DieState> = Array(9) { DieState.NONE }) {
     override fun equals(other: Any?): Boolean {
@@ -25,7 +25,7 @@ data class BoardState(private val board: Array<DieState> = Array(9) { DieState.N
 
     val totalPointCount: Int
         get() {
-            var total: Int = 0
+            var total = 0
 
             for (column in board.toList().chunked(3)) {
                 for (i in 0..<3) {
