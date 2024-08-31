@@ -1,12 +1,7 @@
 package com.metalpizzacat.knucklebones.game
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,12 +19,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.metalpizzacat.knucklebones.GameState
 import com.metalpizzacat.knucklebones.R
 import kotlinx.coroutines.delay
@@ -69,93 +61,6 @@ fun AnimatedDie(
         tint = Color.Unspecified,
         modifier = modifier
     )
-}
-
-@Composable
-fun DieIcon(die: DieState, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Icon(
-        painterResource(die.res),
-        "Die of value ${die.value}",
-        tint = Color.Unspecified,
-        modifier = modifier
-            .padding(5.dp)
-            .fillMaxSize()
-            .clickable {
-                if (die == DieState.NONE) {
-                    onClick()
-                }
-            }
-    )
-
-}
-
-@Composable
-fun DieGrid(
-    modifier: Modifier = Modifier,
-    isCurrentTurn: Boolean,
-    board: BoardState,
-    mirrored: Boolean,
-    onClick: (column: Int) -> Unit
-) {
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        if (!mirrored) {
-            Text(
-                text = board.totalPointCount.toString(),
-                modifier = Modifier
-                    .weight(0.1f)
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp
-            )
-        }
-        Row(
-            modifier = if (!isCurrentTurn) {
-                Modifier
-            } else {
-                Modifier
-                    .background(color = colorResource(id = R.color.teal_700))
-            }
-                .fillMaxWidth()
-                .weight(0.9f)
-        ) {
-            for (j in 0..<3) {
-                Column(
-                    modifier = Modifier
-                        .weight(0.3f)
-                        .fillMaxHeight()
-                ) {
-                    for (i in 0..<3) {
-                        DieIcon(
-                            die = board[j, if (!mirrored) {
-                                i
-                            } else {
-                                2 - i
-                            }], modifier = Modifier
-                                .weight(0.3f)
-                                .fillMaxSize()
-                        ) {
-                            Log.d("hi", "Clicked $j x $i")
-                            if (board.canPlaceInColumn(j)) {
-                                onClick(j)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (mirrored) {
-            Text(
-                text = board.totalPointCount.toString(),
-                modifier = Modifier
-                    .weight(0.1f)
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp
-            )
-        }
-    }
 }
 
 @Composable
