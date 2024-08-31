@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.metalpizzacat.knucklebones.GameState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,11 +40,13 @@ class GameViewModel : ViewModel() {
     }
 
     fun startGameAgainstPlayer() {
+        currentGameState = GameState.PLAYING
         resetGame()
         isPlayingAgainstPlayer = true
     }
 
     fun startGameAgainstBot() {
+        currentGameState = GameState.PLAYING
         resetGame()
         isPlayingAgainstPlayer = false
     }

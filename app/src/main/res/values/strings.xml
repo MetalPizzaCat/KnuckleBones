@@ -7,4 +7,6 @@
     <string name="player_2_won">Player 2 Won!</string>
     <string name="to_the_menu">To the menu</string>
     <string name="image_of_a_die_with_6_dots">Image of a die with 6 dots</string>
+    <string name="how_to_play">How to play?</string>
+    <string name="knucklebones">Knucklebones</string>
 </resources>
