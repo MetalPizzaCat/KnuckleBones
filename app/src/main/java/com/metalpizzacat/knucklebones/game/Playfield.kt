@@ -24,6 +24,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.metalpizzacat.knucklebones.GameState
 import com.metalpizzacat.knucklebones.R
+import com.metalpizzacat.shotgungamble.rememberShakeController
+import com.metalpizzacat.shotgungamble.shake
+import com.metalpizzacat.shotgungamble.shake.ShakeConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -73,9 +76,21 @@ fun Playfield(
     val playerBoardState by viewModel.playerState.collectAsState()
     val computerBoardState by viewModel.computerState.collectAsState()
     val scope = rememberCoroutineScope()
+    val shakeController = rememberShakeController()
 
-
-
+    fun shakeDie() {
+        isRolling = true
+        shakeController.shake(
+            ShakeConfig(
+                6,
+                50000f,
+                translateX = 30f,
+                translateY = 30f,
+                scaleX = 0.1f,
+                scaleY = 0.1f
+            )
+        )
+    }
     Column(
         modifier
             .fillMaxSize()
@@ -89,7 +104,7 @@ fun Playfield(
             if (viewModel.isPlayingAgainstPlayer && !isRolling && !viewModel.isPlayerTurn) {
                 viewModel.placeDieOnComputerBoard(y, viewModel.expectedRoll)
                 viewModel.doNextRoll()
-                isRolling = true
+                shakeDie()
             }
         }
         if (!viewModel.gameFinished) {
@@ -102,6 +117,7 @@ fun Playfield(
                     .weight(0.1f)
                     .fillMaxSize()
                     .padding(5.dp)
+                    .shake(shakeController)
             ) {
                 isRolling = false
                 if (!viewModel.isPlayingAgainstPlayer && !viewModel.isPlayerTurn) {
@@ -110,7 +126,7 @@ fun Playfield(
                         delay(1000)
                         viewModel.doComputerTurn()
                         viewModel.doNextRoll()
-                        isRolling = true
+                        shakeDie()
                     }
 
                 }
@@ -129,7 +145,7 @@ fun Playfield(
             if (!isRolling && viewModel.isPlayerTurn) {
                 viewModel.placeDieOnPlayerBoard(y, viewModel.expectedRoll)
                 viewModel.doNextRoll()
-                isRolling = true
+                shakeDie()
             }
         }
     }
